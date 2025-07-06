@@ -22,10 +22,6 @@ jobs:
       working-directory: Source
       run: msbuild uacme.sln /p:Configuration=Release /p:Platform=x64
 
-    - name: List built payloads
-      run: |
-        dir Source\*\output\x64\Release\ /b
-
     - name: Upload built payloads
       uses: actions/upload-artifact@v4
       with:
