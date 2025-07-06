@@ -26,9 +26,15 @@ jobs:
       working-directory: Source
       run: msbuild uacme.sln /p:Configuration=Release /p:Platform=x64
 
+    - name: List output files
+      run: |
+        dir Source\output\Win32\Release\
+        dir Source\output\x64\Release\
+
     - name: Upload built payloads
       uses: actions/upload-artifact@v4
       with:
         name: UACMe-Binaries
         path: |
-          Source\Bin\*
+          Source\output\Win32\Release\
+          Source\output\x64\Release\
