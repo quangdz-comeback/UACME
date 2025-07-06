@@ -18,23 +18,20 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Build UACMe Win32
-      working-directory: Source
-      run: msbuild uacme.sln /p:Configuration=Release /p:Platform=Win32
-
-    - name: Build UACMe x64
+    - name: Build all UACMe modules (x64)
       working-directory: Source
       run: msbuild uacme.sln /p:Configuration=Release /p:Platform=x64
 
-    - name: List output files
+    - name: List built payloads
       run: |
-        dir Source\output\Win32\Release\
-        dir Source\output\x64\Release\
+        dir Source\*\output\x64\Release\ /b
 
     - name: Upload built payloads
       uses: actions/upload-artifact@v4
       with:
-        name: UACMe-Binaries
+        name: UACMe-Payloads-x64
         path: |
-          Source\output\Win32\Release\
-          Source\output\x64\Release\
+          Source\Yuubari\output\x64\Release\UacInfo64.exe
+          Source\Naka\output\x64\Release\Naka64.exe
+          Source\Fubuki\output\x64\Release\Fubuki64.dll
+          Source\Akagi\output\x64\Release\Akagi64.exe
