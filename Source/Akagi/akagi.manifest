@@ -3,7 +3,7 @@
     <assemblyIdentity 
         type="win32" 
         name="Akagi"
-        version="1.0.0.0"
+        version="9.9.9.9"
         processorArchitecture="*"
     />
     <description>Akagi was an aircraft carrier of the Imperial Japanese Navy (IJN), named after Mount Akagi in present-day Gunma Prefecture.</description>
