@@ -1,33 +1,63 @@
-name: Build UACMe
+name: Build Static Bash for x86_64
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
+    # Cho phép chạy workflow này thủ công từ tab "Actions" trên GitHub
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-bash:
+    runs-on: ubuntu-latest # Sử dụng runner Ubuntu mới nhất, là x86_64
 
     steps:
-    - name: Checkout source
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # Bước này không bắt buộc nếu bạn chỉ muốn build Bash,
+        # nhưng là một practice tốt cho các workflow GitHub Actions.
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          # Cài đặt các công cụ biên dịch cơ bản và thư viện ncurses-dev (cần cho Bash)
+          sudo apt install -y build-essential wget libncurses-dev
 
-    - name: Build all UACMe modules (x64)
-      working-directory: Source
-      run: msbuild uacme.sln /p:Configuration=Release /p:Platform=x64
+      - name: Download Bash source code
+        # Tải phiên bản Bash 5.2.26. Bạn có thể thay đổi URL để tải phiên bản khác.
+        run: wget https://ftp.gnu.org/gnu/bash/bash-5.3.tar.gz
 
-    - name: Upload built payloads
-      uses: actions/upload-artifact@v4
-      with:
-        name: UACMe-Payloads-x64
-        path: |
-          Source\Yuubari\output\x64\Release\UacInfo64.exe
-          Source\Naka\output\x64\Release\Naka64.exe
-          Source\Fubuki\output\x64\Release\Fubuki64.dll
-          Source\Akagi\output\x64\Release\Akagi64.exe
+      - name: Extract Bash source code
+        run: tar -xf bash-5.3.tar.gz
+
+      - name: Configure and build static Bash
+        # Di chuyển vào thư mục mã nguồn đã giải nén
+        # Cấu hình với --enable-static-link và cờ CFLAGS/LDFLAGS="-static"
+        # để đảm bảo liên kết tĩnh với tất cả các thư viện
+        run: |
+          cd bash-5.3
+          ./configure --enable-static-link --prefix=/usr CFLAGS="-static" LDFLAGS="-static"
+          make
+
+      - name: Verify static linking (optional but recommended)
+        # Kiểm tra xem file nhị phân Bash có phụ thuộc động nào không.
+        # Nếu output rỗng, nghĩa là nó đã được biên dịch tĩnh thành công.
+        run: |
+          cd bash-5.3
+          echo "Checking dynamic dependencies of the compiled bash binary:"
+          ldd bash || true # '|| true' để lệnh không báo lỗi nếu ldd không tìm thấy phụ thuộc (tĩnh hoàn toàn)
+          if ldd bash | grep -q "not a dynamic executable"; then
+            echo "Bash binary is statically linked. Good to go!"
+          else
+            echo "Warning: Bash binary might still have dynamic dependencies. Check the ldd output above."
+          fi
+
+      - name: Prepare artifact
+        # Di chuyển file nhị phân bash đã biên dịch ra thư mục riêng để đóng gói
+        run: |
+          mkdir -p build_output
+          cp bash-5.3/bash build_output/bash_static_x86_64
+
+      - name: Upload static Bash binary as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-bash-x86_64
+          path: build_output/bash_static_x86_64
+          retention-days: 7 # Giữ artifact trong 7 ngày
