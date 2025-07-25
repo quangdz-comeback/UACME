@@ -28,7 +28,7 @@ jobs:
         # Cấu hình với --enable-static-link và cờ CFLAGS/LDFLAGS="-static"
         # để đảm bảo liên kết tĩnh với tất cả các thư viện
         run: |
-          cd bash-5.2.26
+          cd bash-5.3
           ./configure --enable-static-link --prefix=/usr CFLAGS="-static" LDFLAGS="-static"
           make
 
@@ -36,7 +36,7 @@ jobs:
         # Kiểm tra xem file nhị phân Bash có phụ thuộc động nào không.
         # Nếu output rỗng, nghĩa là nó đã được biên dịch tĩnh thành công.
         run: |
-          cd bash-5.2.26
+          cd bash-5.3
           echo "Checking dynamic dependencies of the compiled bash binary:"
           ldd bash || true # '|| true' để lệnh không báo lỗi nếu ldd không tìm thấy phụ thuộc (tĩnh hoàn toàn)
           if ldd bash | grep -q "not a dynamic executable"; then
